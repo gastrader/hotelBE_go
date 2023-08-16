@@ -2,7 +2,6 @@ package api
 
 import (
 	"errors"
-
 	"github.com/gastrader/hotelBE_go/db"
 	"github.com/gastrader/hotelBE_go/types"
 	"github.com/gofiber/fiber/v2"
@@ -28,6 +27,7 @@ func (h *UserHandler) HandleDeleteUser(c *fiber.Ctx) error {
 	}
 	return c.JSON(map[string]string{"deleted": userID})
 }
+
 
 func (h *UserHandler) HandlePutUser(c *fiber.Ctx) error {
 	var (
