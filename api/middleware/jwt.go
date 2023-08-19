@@ -5,37 +5,46 @@ import (
 	"os"
 	"time"
 
+	"github.com/gastrader/hotelBE_go/db"
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
+
 )
 
-func JWTAuthentication(c *fiber.Ctx) error {
-	fmt.Println("---> JWT auth")
-	token, ok := c.GetReqHeaders()["X-Api-Token"]
-	if !ok {
-		return fmt.Errorf("unauthorized my guy")
-	}
-	fmt.Println("THe token is:", token)
+func JWTAuthentication(userStore db.UserStore) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		fmt.Println("---> JWT auth")
+		token, ok := c.GetReqHeaders()["X-Api-Token"]
+		if !ok {
+			return fmt.Errorf("unauthorized my guy")
+		}
 
-	claims, err := validateToken(token); 
-	if err != nil {
-		return err
-	}
-	
-	//check token expiration
+		claims, err := validateToken(token)
+		if err != nil {
+			return err
+		}
 
-	expires := claims["expires"].(string)
+		//check token expiration
 
-	expiresTime, err := time.Parse(time.RFC3339Nano, expires)
-	if err != nil {
-		return fmt.Errorf("invalid bruh")
+		expires := claims["expires"].(string)
+
+		expiresTime, err := time.Parse(time.RFC3339Nano, expires)
+		if err != nil {
+			return fmt.Errorf("invalid bruh")
+		}
+		if !expiresTime.After(time.Now()) {
+			return fmt.Errorf("invalid time")
+		}
+		userID := claims["id"].(string)
+		user, err := userStore.GetUserByID(c.Context(), userID)
+		if err != nil {
+			return fmt.Errorf("unauthorized")
+		}
+		//set current authenticated user to the context..
+		c.Context().SetUserValue("user", user)
+		return c.Next()
 	}
-	if !expiresTime.After(time.Now()) {
-		return fmt.Errorf("invalid time")
-	}
-	return c.Next()
 }
-
 func validateToken(tokenStr string) (jwt.MapClaims, error) {
 	token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
 		// Don't forget to validate the alg is what you expect:
@@ -51,7 +60,7 @@ func validateToken(tokenStr string) (jwt.MapClaims, error) {
 		fmt.Println("failed to parse token: ", err)
 		return nil, fmt.Errorf("unauthorized dog")
 	}
-	if !token.Valid{
+	if !token.Valid {
 		return nil, fmt.Errorf("token not valid")
 	}
 	claims, ok := token.Claims.(jwt.MapClaims)
