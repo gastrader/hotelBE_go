@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"os"
 
 	"github.com/gastrader/hotelBE_go/types"
 	"go.mongodb.org/mongo-driver/bson"
@@ -12,7 +13,7 @@ import (
 type BookingStore interface {
 	InsertBooking(context.Context, *types.Booking) (*types.Booking, error)
 	GetBookings(context.Context, bson.M) ([]*types.Booking, error)
-	GetBookingByID(ctx context.Context, id string ) (*types.Booking, error)
+	GetBookingByID(ctx context.Context, id string) (*types.Booking, error)
 	UpdateBooking(context.Context, string, bson.M) error
 }
 
@@ -24,9 +25,10 @@ type MongoBookingStore struct {
 }
 
 func NewMongoBookingStore(client *mongo.Client) *MongoBookingStore {
-return &MongoBookingStore{
+	dbname := os.Getenv(MongoDBNameEnvName)
+	return &MongoBookingStore{
 		client: client,
-		coll:   client.Database(DBNAME).Collection("bookings"),
+		coll:   client.Database(dbname).Collection("bookings"),
 	}
 }
 
@@ -42,7 +44,7 @@ func (s *MongoBookingStore) UpdateBooking(ctx context.Context, id string, update
 	return err
 }
 
-func(s *MongoBookingStore) InsertBooking(ctx context.Context, booking *types.Booking) (*types.Booking, error) {
+func (s *MongoBookingStore) InsertBooking(ctx context.Context, booking *types.Booking) (*types.Booking, error) {
 	resp, err := s.coll.InsertOne(ctx, booking)
 	if err != nil {
 		return nil, err
@@ -68,7 +70,7 @@ func (s *MongoBookingStore) GetBookingByID(ctx context.Context, id string) (*typ
 		return nil, err
 	}
 	var booking types.Booking
-	if err := s.coll.FindOne(ctx, bson.M{"_id":oid}).Decode(&booking); err != nil{
+	if err := s.coll.FindOne(ctx, bson.M{"_id": oid}).Decode(&booking); err != nil {
 		return nil, err
 	}
 	return &booking, nil

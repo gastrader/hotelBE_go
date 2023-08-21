@@ -1,1 +1,1 @@
-go run ./scripts/seed.go
+go run scripts/seed.go

@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"os"
 
 	"github.com/gastrader/hotelBE_go/types"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -22,9 +23,10 @@ type MongoHotelStore struct {
 }
 
 func NewMongoHotelStore(client *mongo.Client) *MongoHotelStore {
+	dbname := os.Getenv(MongoDBNameEnvName)
 	return &MongoHotelStore{
 		client: client,
-		coll:   client.Database(DBNAME).Collection("hotels"),
+		coll:   client.Database(dbname).Collection("hotels"),
 	}
 }
 
@@ -44,7 +46,7 @@ func (s *MongoHotelStore) InsertHotel(ctx context.Context, hotel *types.Hotel) (
 
 func (s *MongoHotelStore) GetHotels(ctx context.Context, filter Map, pag *Pagination) ([]*types.Hotel, error) {
 	opts := options.FindOptions{}
-	opts.SetSkip((pag.Page -1 ) * pag.Limit).SetLimit(pag.Limit)
+	opts.SetSkip((pag.Page - 1) * pag.Limit).SetLimit(pag.Limit)
 	resp, err := s.coll.Find(ctx, filter, &opts)
 	if err != nil {
 		return nil, err
@@ -56,10 +58,9 @@ func (s *MongoHotelStore) GetHotels(ctx context.Context, filter Map, pag *Pagina
 	return hotels, nil
 }
 
-
 func (s *MongoHotelStore) GetHotelByID(ctx context.Context, id string) (*types.Hotel, error) {
 	oid, err := primitive.ObjectIDFromHex(id)
-	if err != nil{
+	if err != nil {
 		return nil, err
 	}
 	var hotel types.Hotel
