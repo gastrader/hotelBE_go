@@ -22,7 +22,7 @@ type UserStore interface {
 	GetUsers(context.Context) ([]*types.User, error)
 	InsertUser(context.Context, *types.User) (*types.User, error)
 	DeleteUser(context.Context, string) error
-	UpdateUser(ctx context.Context,filter bson.M,params types.UpdateUserParams) error
+	UpdateUser(ctx context.Context, filter bson.M, params types.UpdateUserParams) error
 	Dropper
 }
 
@@ -43,12 +43,9 @@ func (s *MongoUserStore) Drop(ctx context.Context) error {
 	return s.coll.Drop(ctx)
 }
 
-
-func (s *MongoUserStore) UpdateUser(ctx context.Context,filter bson.M, params types.UpdateUserParams) error{
-	update := bson.D{
-		{
-			Key:"$set",Value: params.ToBSON(),
-		},
+func (s *MongoUserStore) UpdateUser(ctx context.Context, filter bson.M, params types.UpdateUserParams) error {
+	update := bson.M{
+			"$set": params,
 	}
 	_, err := s.coll.UpdateOne(ctx, filter, update)
 	if err != nil {
@@ -57,7 +54,7 @@ func (s *MongoUserStore) UpdateUser(ctx context.Context,filter bson.M, params ty
 	return nil
 }
 
-func (s *MongoUserStore) DeleteUser(ctx context.Context,id string) error{
+func (s *MongoUserStore) DeleteUser(ctx context.Context, id string) error {
 	oid, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return err
@@ -70,7 +67,7 @@ func (s *MongoUserStore) DeleteUser(ctx context.Context,id string) error{
 	return nil
 }
 
-func (s *MongoUserStore) InsertUser(ctx context.Context, user *types.User) (*types.User, error){
+func (s *MongoUserStore) InsertUser(ctx context.Context, user *types.User) (*types.User, error) {
 	res, err := s.coll.InsertOne(ctx, user)
 	if err != nil {
 		return nil, err
@@ -108,11 +105,9 @@ func (s *MongoUserStore) GetUserByID(ctx context.Context, id string) (*types.Use
 
 func (s *MongoUserStore) GetUserByEmail(ctx context.Context, email string) (*types.User, error) {
 	//validate correctoness of ID
-		var user types.User
+	var user types.User
 	if err := s.coll.FindOne(ctx, bson.M{"email": email}).Decode(&user); err != nil {
 		return nil, err
 	}
 	return &user, nil
 }
-
-

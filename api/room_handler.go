@@ -43,7 +43,7 @@ func (h *RoomHandler) HandleGetRooms(c *fiber.Ctx) error {
 	if err != nil {
 		return err
 	}
-	
+
 	return c.JSON(rooms)
 }
 
@@ -96,11 +96,22 @@ func (h *RoomHandler) HandleBookRoom(c *fiber.Ctx) error {
 
 func (h *RoomHandler) isRoomAvailableForBooking(ctx context.Context, roomID primitive.ObjectID, params BookRoomParams) (bool, error) {
 	where := bson.M{
+
 		"roomID": roomID,
-		"fromDate": bson.M{
-			"$gte": params.FromDate},
-		"tillDate": bson.M{
-			"$lte": params.TillDate},
+		"$or": []bson.M{
+			{
+				"fromDate": bson.M{"$lte": params.FromDate},
+				"tillDate": bson.M{"$gte": params.FromDate},
+			},
+			{
+				"fromDate": bson.M{"$lte": params.TillDate},
+				"tillDate": bson.M{"$gte": params.TillDate},
+			},
+			{
+				"fromDate": bson.M{"$gte": params.FromDate},
+				"tillDate": bson.M{"$lte": params.TillDate},
+			},
+		},
 	}
 	bookings, err := h.store.Booking.GetBookings(ctx, where)
 	if err != nil {
