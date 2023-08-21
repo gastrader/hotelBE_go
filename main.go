@@ -4,9 +4,9 @@ import (
 	"context"
 	"flag"
 	"log"
+	"net/http"
 
 	"github.com/gastrader/hotelBE_go/api"
-	"github.com/gastrader/hotelBE_go/api/middleware"
 	"github.com/gastrader/hotelBE_go/db"
 	"github.com/gofiber/fiber/v2"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -15,7 +15,11 @@ import (
 
 var config = fiber.Config{
 	ErrorHandler: func(c *fiber.Ctx, err error) error {
-		return c.JSON(map[string]string{"error": err.Error()})
+		if apiError, ok := err.(api.Error); ok {
+			return c.Status(apiError.Code).JSON(apiError)
+		}
+		apiError := api.NewError(http.StatusInternalServerError, err.Error())
+		return c.Status(apiError.Code).JSON(apiError)
 	},
 }
 
@@ -46,9 +50,9 @@ func main() {
 		bookingHandler = api.NewBookingHandler(store)
 		app            = fiber.New(config)
 		auth           = app.Group("/api/")
-		
-		apiv1          = app.Group("/api/v1", middleware.JWTAuthentication(userStore))
-		admin          = apiv1.Group("/admin", middleware.AdminAuth)
+
+		apiv1 = app.Group("/api/v1", api.JWTAuthentication(userStore))
+		admin = apiv1.Group("/admin", api.AdminAuth)
 	)
 
 	//auth handler
@@ -72,7 +76,6 @@ func main() {
 	apiv1.Get("/room", roomHandler.HandleGetRooms)
 
 	//TODO: Cancel booking!
-
 
 	//booking handlers
 	apiv1.Get("/booking/:id", bookingHandler.HandleGetBooking)
