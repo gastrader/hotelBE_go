@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"math/rand"
 	"time"
 
 	"github.com/gastrader/hotelBE_go/api"
@@ -40,4 +41,9 @@ func main() {
 	booking := fixtures.AddBooking(store, room.ID, user.ID, time.Now(), time.Now().AddDate(0, 0, 3), 2)
 	fmt.Printf("Test booking -> %+v \n", booking)
 	fmt.Println("-----> DB Seeded <-----")
+
+	for i := 0; i<100; i++ {
+		name := fmt.Sprintf("Random %d", i)
+		fixtures.AddHotel(store, name, "Canada", rand.Intn(5)+1, nil)
+	}
 }
