@@ -2,8 +2,6 @@ package api
 
 import (
 	"fmt"
-	"net/http"
-
 	"github.com/gastrader/hotelBE_go/db"
 
 	"github.com/gofiber/fiber/v2"
@@ -30,13 +28,10 @@ func (h *BookingHandler) HandleCancelBooking(c *fiber.Ctx) error {
 
 	user, err := getAuthUser(c)
 	if err != nil {
-		return err
+		return ErrUnauthortized()
 	}
 	if booking.UserID != user.ID {
-		return c.Status(http.StatusUnauthorized).JSON(genericResp{
-			Type: "error",
-			Msg: "not authorizzzed",
-		})
+		return ErrUnauthortized()
 	}
 	if err := h.store.Booking.UpdateBooking(c.Context(), c.Params("id"), bson.M{"cancelled": true}); err != nil{
 		return err
@@ -63,13 +58,10 @@ func (h *BookingHandler) HandleGetBooking(c *fiber.Ctx) error {
 	}
 	user, err := getAuthUser(c)
 	if err != nil {
-		return err
+		return ErrUnauthortized()
 	}
 	if booking.UserID != user.ID {
-		return c.Status(http.StatusUnauthorized).JSON(genericResp{
-			Type: "error",
-			Msg: "not authorized",
-		})
+		return ErrUnauthortized()
 	}
 	return c.JSON(booking)
 }

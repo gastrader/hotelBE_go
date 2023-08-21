@@ -32,9 +32,9 @@ func main() {
 	}
 
 	user := fixtures.AddUser(store, "Amanda", "Joyce", false)
-	fmt.Printf("%s -> %s", user.FirstName, api.CreateTokenFromUser(user))
+	fmt.Printf("%s -> %s\n", user.FirstName, api.CreateTokenFromUser(user))
 	admin := fixtures.AddUser(store, "Admin", "Strator", true)
-	fmt.Printf("%s -> %s", admin.FirstName, api.CreateTokenFromUser(admin))
+	fmt.Printf("%s -> %s\n", admin.FirstName, api.CreateTokenFromUser(admin))
 	hotel := fixtures.AddHotel(store, "some hotel", "bermuda", 5, nil)
 	room := fixtures.AddRoom(store, "large", true, 199.99, hotel.ID)
 	booking := fixtures.AddBooking(store, room.ID, user.ID, time.Now(), time.Now().AddDate(0, 0, 3), 2)

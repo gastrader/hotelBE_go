@@ -22,7 +22,7 @@ func TestUserGetBooking(t *testing.T) {
 		hotel     = fixtures.AddHotel(db.Store, "bar hotel", "montreal", 4, nil)
 		room      = fixtures.AddRoom(db.Store, "small", true, 98.99, hotel.ID)
 		booking   = fixtures.AddBooking(db.Store, room.ID, user.ID, time.Now(), time.Now().AddDate(0, 0, 2), 2)
-		app       = fiber.New()
+		app       = fiber.New(fiber.Config{ErrorHandler: ErrorHandler})
 		route = app.Group("/", JWTAuthentication(db.User))
 		bookingHandler = NewBookingHandler(db.Store)
 	)
@@ -72,7 +72,7 @@ func TestAdminGetBookings(t *testing.T) {
 		hotel     = fixtures.AddHotel(db.Store, "bar hotel", "montreal", 4, nil)
 		room      = fixtures.AddRoom(db.Store, "small", true, 98.99, hotel.ID)
 		booking   = fixtures.AddBooking(db.Store, room.ID, user.ID, time.Now(), time.Now().AddDate(0, 0, 2), 2)
-		app       = fiber.New()
+		app       = fiber.New(fiber.Config{ErrorHandler: ErrorHandler})
 	)
 	_ = booking
 	admin := app.Group("/", JWTAuthentication(db.User), AdminAuth)
@@ -109,7 +109,7 @@ func TestAdminGetBookings(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if resp.StatusCode == http.StatusOK {
-		t.Fatalf(" expected non 200 response but got %d", resp.StatusCode)
+	if resp.StatusCode != http.StatusUnauthorized {
+		t.Fatalf(" expected status unauthorized but got %d", resp.StatusCode)
 	}
 }
