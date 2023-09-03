@@ -31,7 +31,7 @@ func JWTAuthentication(userStore db.UserStore) fiber.Handler {
 
 		expiresTime, err := time.Parse(time.RFC3339Nano, expires)
 		if err != nil {
-			return fmt.Errorf("invalid bruh %v", err)
+			return fmt.Errorf("invalid token %v", err)
 		}
 		if !expiresTime.After(time.Now()) {
 			return NewError(http.StatusUnauthorized, "token expired")
@@ -58,6 +58,7 @@ func validateToken(tokenStr string) (jwt.MapClaims, error) {
 		// hmacSampleSecret is a []byte containing your secret, e.g. []byte("my_secret_key")
 		return []byte(secret), nil
 	})
+	
 	if err != nil {
 		fmt.Println("failed to parse token: ", err)
 		return nil, ErrUnauthortized()
@@ -69,6 +70,7 @@ func validateToken(tokenStr string) (jwt.MapClaims, error) {
 	if !ok {
 		return nil, ErrUnauthortized()
 	}
+	
 	return claims, nil
 
 }
