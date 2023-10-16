@@ -1,9 +1,3 @@
-# PROJECT ENVIRONMENT VARIABLES
+# Mock Hotel Backend
 
-````
-HTTP_LISTEN_ADDRESS = :3000
-JWT_SECRET= somethingsupersecretNOBODYKNOWS
-MONGO_DB_NAME= hotel-reservation
-MONGO_DB_URL= mongodb://localhost:27017
-MONGO_DB_URL_TEST= mongodb://localhost:27017
-````
+This is a CRUD backend for a hotel reservation API in Go, integrating JWT authentication, admin functionalities, and MongoDB for storage. Utilizes Go Fiber and containerized via Docker.
